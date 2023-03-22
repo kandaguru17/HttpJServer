@@ -1,6 +1,8 @@
 package com.httpjserver.core;
 
-import com.httpjserver.util.HttpJUtil;
+import com.httpjserver.core.parser.HttpJParser;
+import com.httpjserver.http.HttpParsingException;
+import com.httpjserver.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +14,15 @@ import java.net.Socket;
 public class HttpJServerWorker extends Thread {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpJServerWorker.class.getName());
+    public static final String CRLF = "\r\n";
 
     private final Socket socket;
 
+    private final HttpJParser httpJParser;
+
     public HttpJServerWorker(Socket socket) {
         this.socket = socket;
+        httpJParser = new HttpJParser();
     }
 
     @Override
@@ -24,13 +30,12 @@ public class HttpJServerWorker extends Thread {
         try (InputStream inputStream = socket.getInputStream();
              OutputStream outputStream = socket.getOutputStream()) {
 
-            final String responseBody = HttpJUtil.writeValueAsStringFromFile("index.html");
-            final String CRLF = "\n\r";
+            HttpRequest httpRequest = httpJParser.parseRequest(inputStream);
 
-            int _byte;
-            while ((_byte = inputStream.read()) >= 0) {
-                System.err.print((char) _byte);
-            }
+            final String responseBody = "Received " + httpRequest.getVersion()
+                    + " " + httpRequest.getHost()
+                    + " " + httpRequest.getResourcePath()
+                    + " " + httpRequest.getRequestBody();
 
 
             var response = "HTTP/1.1 200 OK" + CRLF +
@@ -38,7 +43,8 @@ public class HttpJServerWorker extends Thread {
                     + responseBody + CRLF + CRLF;
 
             outputStream.write(response.getBytes());
-        } catch (IOException ex) {
+            outputStream.flush();
+        } catch (IOException | HttpParsingException ex) {
             LOG.error("Error Occurred in serving the request {}", ex.getMessage(), ex);
         } finally {
             try {
