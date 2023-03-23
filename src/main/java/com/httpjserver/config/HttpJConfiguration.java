@@ -1,4 +1,5 @@
 package com.httpjserver.config;
 
-public record HttpJConfiguration(int port, String webRoot) {
+public record HttpJConfiguration(Integer port, String webRoot, Integer threadPoolSize) {
+
 }

@@ -77,16 +77,14 @@ public class HttpJParser {
         httpRequest.headers(headerMap);
     }
 
-    private void parseRequestBody(String[] requestParts, HttpRequest httpRequest) throws HttpParsingException {
+    private void parseRequestBody(String[] requestParts, HttpRequest httpRequest) {
         if (httpRequest.getMethod().equals(HttpRequest.HttpMethod.GET)) {
             return;
         }
         // a CRLF expected before the request body and after the
         if (requestParts[requestParts.length - 2].isBlank()) {
             httpRequest.requestBody(requestParts[requestParts.length - 1]);
-        } else {
-            LOG.error("Error in parsing the request body");
-            throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
         }
+        // TODO: identify the type of request body if no header is present
     }
 }

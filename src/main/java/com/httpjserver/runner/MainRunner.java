@@ -1,17 +1,11 @@
 package com.httpjserver.runner;
 
-import com.httpjserver.config.HttpJConfigurationManager;
-import com.httpjserver.socket.HttpJServerSocket;
+import com.httpjserver.core.HttpJServerApplication;
 
-import java.io.IOException;
-
+// TODO: This class used for local Testing purposes
 public class MainRunner {
 
-    public static void main(String[] args) throws IOException {
-        HttpJConfigurationManager httpJConfigurationManager = HttpJConfigurationManager.getHttpJConfigurationManager();
-        httpJConfigurationManager.loadConfigurations("application.yaml");
-        HttpJServerSocket httpJServerSocket = new HttpJServerSocket(httpJConfigurationManager.getConfiguration());
-        httpJServerSocket.startServer();
-
+    public static void main(String[] args) {
+        HttpJServerApplication.start();
     }
 }
