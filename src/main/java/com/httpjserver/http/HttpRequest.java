@@ -7,7 +7,7 @@ public class HttpRequest {
 
 
     public enum HttpMethod {
-        GET, POST, HEAD;
+        GET, POST, HEAD, OPTIONS;
         public static final int MAX_LENGTH;
 
         static {

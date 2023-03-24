@@ -27,7 +27,6 @@ public class HttpJServerWorker implements Runnable {
 
     @Override
     public void run() {
-
         OutputStream outputStream = null;
         InputStream inputStream = null;
         try {
@@ -37,13 +36,13 @@ public class HttpJServerWorker implements Runnable {
             HttpRequest httpRequest = httpJParser.parseRequest(inputStream);
 
             // TODO: hard coded response, use the response from the FrameWork
-            final String responseBody = "Received " + httpRequest.getVersion()
-                    + " " + httpRequest.getHost()
-                    + " " + httpRequest.getResourcePath()
-                    + " " + httpRequest.getRequestBody();
+            String responseBody = "";
+            if (httpRequest.getMethod() != null)
+                responseBody = httpRequest.getRequestBody() != null ? "<p>" + httpRequest.getRequestBody() + "</p>" : "<h1> Helloo !!</h1>";
 
 
             var response = "HTTP/1.1 200 OK" + CRLF +
+                    "Content-Type: text/html" + CRLF +
                     "Content-Length: " + responseBody.getBytes().length + CRLF + CRLF
                     + responseBody + CRLF + CRLF;
 

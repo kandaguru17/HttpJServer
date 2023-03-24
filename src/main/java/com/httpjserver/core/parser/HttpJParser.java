@@ -28,21 +28,32 @@ public class HttpJParser {
     }
 
     private void parseInputStream(InputStream is, HttpRequest httpRequest) throws HttpParsingException {
-        final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
         try {
-            int request;
+            final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
             final StringBuilder reqBuilder = new StringBuilder();
-            while (bufferedReader.ready() && (request = bufferedReader.read()) >= 0) {
-                reqBuilder.append((char) request);
+
+            // parse request line
+            String request = bufferedReader.readLine();
+            parseRequestLine(request, httpRequest);
+
+            LOG.debug("Request Line parsed {} {} {}", httpRequest.getMethod(),
+                    httpRequest.getResourcePath(),
+                    httpRequest.getVersion());
+
+            // parse the headers
+            while (request != null && !request.isEmpty()) {
+                reqBuilder.append(request).append(CRLF);
+                request = bufferedReader.readLine();
             }
-
-            LOG.debug("Http request received : \n{}", reqBuilder);
-
             String[] requestParts = reqBuilder.toString().split(CRLF);
-
-            parseRequestLine(requestParts, httpRequest);
             parseRequestHeader(requestParts, httpRequest);
-            parseRequestBody(requestParts, httpRequest);
+
+            LOG.debug("Request Headers parsed {}", httpRequest.getHeaders());
+
+            // parse request body
+            parseRequestBody(bufferedReader, httpRequest);
+            LOG.debug("Request Body parsed {}", httpRequest.getRequestBody() == null ? "" : httpRequest.getRequestBody());
+
 
         } catch (IOException e) {
             LOG.error("Error occurred in parsing the request line", e);
@@ -50,8 +61,7 @@ public class HttpJParser {
         }
     }
 
-    private void parseRequestLine(String[] requestParts, HttpRequest httpRequest) throws HttpParsingException {
-        String requestLine = requestParts[0];
+    private void parseRequestLine(String requestLine, HttpRequest httpRequest) throws HttpParsingException {
         String[] requestLineParts;
         if (requestLine == null || requestLine.isBlank() || (requestLineParts = requestLine.split(SP)).length > 3) {
             LOG.error("RequestLine is malformed, it could be either null, empty or not as per RFC spec");
@@ -60,14 +70,12 @@ public class HttpJParser {
 
         httpRequest.method(requestLineParts[0])
                 .resourcePath(requestLineParts[1])
-                .version(requestLineParts[2])
-                .host(requestParts[1].split(":")[1].trim());
+                .version(requestLineParts[2]);
     }
-
 
     private void parseRequestHeader(String[] requestParts, HttpRequest httpRequest) {
         final Map<String, String> headerMap = new HashMap<>();
-        for (int i = 2; i < requestParts.length; i++) {
+        for (int i = 1; i < requestParts.length; i++) {
             if (requestParts[i].isBlank()) {
                 break;
             }
@@ -77,14 +85,21 @@ public class HttpJParser {
         httpRequest.headers(headerMap);
     }
 
-    private void parseRequestBody(String[] requestParts, HttpRequest httpRequest) {
-        if (httpRequest.getMethod().equals(HttpRequest.HttpMethod.GET)) {
-            return;
+    private void parseRequestBody(BufferedReader bufferedReader, HttpRequest httpRequest) {
+        StringBuilder body = new StringBuilder();
+        int count = 0;
+        int contentLength = Integer.parseInt(httpRequest.getHeaders().getOrDefault("Content-Length", "0"));
+        while (count < contentLength) {
+            char[] buffer = new char[contentLength - count];
+            int read;
+            try {
+                read = bufferedReader.read(buffer);
+                count += read;
+                body.append(buffer, 0, read);
+            } catch (IOException e) {
+                LOG.error("Error Occurred in parsing the request body");
+            }
+            httpRequest.requestBody(body.toString());
         }
-        // a CRLF expected before the request body and after the
-        if (requestParts[requestParts.length - 2].isBlank()) {
-            httpRequest.requestBody(requestParts[requestParts.length - 1]);
-        }
-        // TODO: identify the type of request body if no header is present
     }
 }

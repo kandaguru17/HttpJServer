@@ -1,6 +1,5 @@
-package httpJserver.core.parser;
+package com.httpjserver.core.parser;
 
-import com.httpjserver.core.parser.HttpJParser;
 import com.httpjserver.http.HttpParsingException;
 import com.httpjserver.http.HttpRequest;
 import com.httpjserver.http.HttpVersion;
