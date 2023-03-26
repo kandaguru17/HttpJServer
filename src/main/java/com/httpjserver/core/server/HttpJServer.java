@@ -1,4 +1,4 @@
-package com.httpjserver.core.socket;
+package com.httpjserver.core.server;
 
 import com.httpjserver.config.HttpJConfiguration;
 import com.httpjserver.core.worker.HttpJServerWorker;
@@ -12,6 +12,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * The core server class which has api to start the server and listen incoming requests.
+ * The server is multi-threaded in nature and takes in a default pool size of availableProcessors * 2 + 1
+ */
 public class HttpJServer implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpJServer.class.getName());
@@ -25,6 +29,9 @@ public class HttpJServer implements Runnable {
         this.configuration = configuration;
     }
 
+    /**
+     * Method to start the server with the config loaded in the {@link HttpJConfiguration} and initializes the thread pool
+     */
     public void startServer() {
         int poolSize = configuration.threadPoolSize() == null ? Runtime.getRuntime().availableProcessors() * 2 + 1 :
                 configuration.threadPoolSize();

@@ -1,6 +1,5 @@
 package com.httpjserver.core.parser;
 
-import com.httpjserver.http.HttpParsingException;
 import com.httpjserver.http.HttpRequest;
 import com.httpjserver.http.HttpVersion;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,7 @@ public class HttpJParserTest {
     }
 
     @Test
-    void parseHttpJParser_validRequest() throws HttpParsingException {
+    void parseHttpJParser_validRequest() throws HttpJParsingException {
         is = new ByteArrayInputStream(generateTestCase("GET", "HTTP/1.1"));
         HttpRequest httpRequest = httpJParser.parseRequest(is);
         assertEquals(HttpRequest.HttpMethod.GET, httpRequest.getMethod());
@@ -42,7 +41,7 @@ public class HttpJParserTest {
     @ValueSource(strings = {"OPTION", "LONG_METHOD_NAME"})
     void parseHttpJParser_notImplemented(String method) {
         is = new ByteArrayInputStream(generateTestCase(method, "HTTP/1.1"));
-        final var ex = assertThrows(HttpParsingException.class, () -> httpJParser.parseRequest(is));
+        final var ex = assertThrows(HttpJParsingException.class, () -> httpJParser.parseRequest(is));
         assertEquals(501, ex.getErrorCode());
         assertEquals(NOT_IMPLEMENTED.getMessage(), ex.getMessage());
     }
@@ -51,7 +50,7 @@ public class HttpJParserTest {
     @Test
     void parseHttpJParser_badRequest() {
         is = new ByteArrayInputStream(generateInvalidRequestLineItems());
-        final var ex = assertThrows(HttpParsingException.class, () -> httpJParser.parseRequest(is));
+        final var ex = assertThrows(HttpJParsingException.class, () -> httpJParser.parseRequest(is));
         assertEquals(400, ex.getErrorCode());
         assertEquals(BAD_REQUEST.getMessage(), ex.getMessage());
     }
@@ -59,7 +58,7 @@ public class HttpJParserTest {
     @Test
     void parseHttpJParser_emptyRequestLine_badRequest() {
         is = new ByteArrayInputStream(generateEmptyRequestLineItems());
-        final var ex = assertThrows(HttpParsingException.class, () -> httpJParser.parseRequest(is));
+        final var ex = assertThrows(HttpJParsingException.class, () -> httpJParser.parseRequest(is));
         assertEquals(400, ex.getErrorCode());
         assertEquals(BAD_REQUEST.getMessage(), ex.getMessage());
     }
@@ -67,13 +66,13 @@ public class HttpJParserTest {
     @Test
     void parseHttpJParser_badHttpVersion() {
         is = new ByteArrayInputStream(generateTestCase("GET", "HTTP/5.1"));
-        final var ex = assertThrows(HttpParsingException.class, () -> httpJParser.parseRequest(is));
+        final var ex = assertThrows(HttpJParsingException.class, () -> httpJParser.parseRequest(is));
         assertEquals(505, ex.getErrorCode());
         assertEquals(HTTP_VERSION_NOT_SUPPORTED.getMessage(), ex.getMessage());
     }
 
     @Test
-    void parseHttpJParser_HigherMinorVersion() throws HttpParsingException {
+    void parseHttpJParser_HigherMinorVersion() throws HttpJParsingException {
         is = new ByteArrayInputStream(generateTestCase("GET", "HTTP/1.7"));
         HttpRequest httpRequest = httpJParser.parseRequest(is);
         assertEquals(HttpRequest.HttpMethod.GET, httpRequest.getMethod());
@@ -83,7 +82,7 @@ public class HttpJParserTest {
 
 
     @Test
-    void parseHttpJParser_withRequestBody() throws HttpParsingException {
+    void parseHttpJParser_withRequestBody() throws HttpJParsingException {
         var httpRequestBody = "{\"Hello\" : \"World\"}";
         is = new ByteArrayInputStream(generateTestCaseWithBody(httpRequestBody));
         HttpRequest httpRequest = httpJParser.parseRequest(is);
@@ -105,47 +104,22 @@ public class HttpJParserTest {
 
 
     private byte[] generateTestCase(String method, String httpVersion) {
-        final var str = method + " / " + httpVersion + CRLF +
-                "Host: localhost:8080" + CRLF +
-                "Connection: keep-alive" + CRLF +
-                "sec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"" + CRLF +
-                "sec-ch-ua-mobile: ?0" + CRLF +
-                "sec-ch-ua-platform: \"macOS\"" + CRLF +
-                "Upgrade-Insecure-Requests: 1" + CRLF +
-                "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" + CRLF +
-                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" + CRLF +
-                "Sec-Fetch-Site: none" + CRLF +
-                "Sec-Fetch-Mode: navigate" + CRLF +
-                "Sec-Fetch-User: ?1" + CRLF +
-                "Sec-Fetch-Dest: document" + CRLF +
-                "Accept-Encoding: gzip, deflate, br" + CRLF +
-                "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8";
+        final var str = method + " / " + httpVersion + CRLF + getGetDefaultHeaders();
         return str.getBytes();
     }
 
     private byte[] generateInvalidRequestLineItems() {
-        final var str = "GET" + " INVALID_ITEM / HTTP/1.1" + CRLF +
-                "Host: localhost:8080" + CRLF +
-                "Connection: keep-alive" + CRLF +
-                "sec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"" + CRLF +
-                "sec-ch-ua-mobile: ?0" + CRLF +
-                "sec-ch-ua-platform: \"macOS\"" + CRLF +
-                "Upgrade-Insecure-Requests: 1" + CRLF +
-                "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36" + CRLF +
-                "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" + CRLF +
-                "Sec-Fetch-Site: none" + CRLF +
-                "Sec-Fetch-Mode: navigate" + CRLF +
-                "Sec-Fetch-User: ?1" + CRLF +
-                "Sec-Fetch-Dest: document" + CRLF +
-                "Accept-Encoding: gzip, deflate, br" + CRLF +
-                "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8";
+        final var str = "GET" + " INVALID_ITEM / HTTP/1.1" + CRLF + getGetDefaultHeaders();
         return str.getBytes();
     }
 
-
     private byte[] generateEmptyRequestLineItems() {
-        final var str = CRLF +
-                "Host: localhost:8080" + CRLF +
+        final var str = CRLF + getGetDefaultHeaders();
+        return str.getBytes();
+    }
+
+    private static String getGetDefaultHeaders() {
+        return "Host: localhost:8080" + CRLF +
                 "Connection: keep-alive" + CRLF +
                 "sec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"" + CRLF +
                 "sec-ch-ua-mobile: ?0" + CRLF +
@@ -159,7 +133,6 @@ public class HttpJParserTest {
                 "Sec-Fetch-Dest: document" + CRLF +
                 "Accept-Encoding: gzip, deflate, br" + CRLF +
                 "Accept-Language: en-GB,en-US;q=0.9,en;q=0.8";
-        return str.getBytes();
     }
 
 }

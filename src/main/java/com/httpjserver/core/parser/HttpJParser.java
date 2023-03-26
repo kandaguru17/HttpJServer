@@ -1,6 +1,5 @@
 package com.httpjserver.core.parser;
 
-import com.httpjserver.http.HttpParsingException;
 import com.httpjserver.http.HttpRequest;
 import com.httpjserver.http.HttpStatusCode;
 import org.slf4j.Logger;
@@ -13,6 +12,9 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * The core parser class that pareses the incoming request (input stream).
+ */
 public class HttpJParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpJParser.class.getName());
@@ -20,14 +22,22 @@ public class HttpJParser {
     public static final String SP = " ";
 
 
-    public HttpRequest parseRequest(InputStream is) throws HttpParsingException {
+    /**
+     * Method to parse the input Stream of the incoming request
+     *
+     * @param is the inputStream from the client {@link java.net.Socket} object
+     * @return instance of pared {@link HttpRequest}
+     * @throws HttpJParsingException thrown when there is any parsing error
+     */
+    public HttpRequest parseRequest(InputStream is) throws HttpJParsingException {
         // using input stream reader as it deals well with converting byte to character
         HttpRequest httpRequest = new HttpRequest();
         parseInputStream(is, httpRequest);
         return httpRequest;
     }
 
-    private void parseInputStream(InputStream is, HttpRequest httpRequest) throws HttpParsingException {
+
+    private void parseInputStream(InputStream is, HttpRequest httpRequest) throws HttpJParsingException {
         try {
             final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
             final StringBuilder reqBuilder = new StringBuilder();
@@ -57,15 +67,15 @@ public class HttpJParser {
 
         } catch (IOException e) {
             LOG.error("Error occurred in parsing the request line", e);
-            throw new HttpJRequestParsingException(e.getMessage(), e);
+            throw new HttpJParsingException(HttpStatusCode.INTERNAL_SERVER_ERROR);
         }
     }
 
-    private void parseRequestLine(String requestLine, HttpRequest httpRequest) throws HttpParsingException {
+    private void parseRequestLine(String requestLine, HttpRequest httpRequest) throws HttpJParsingException {
         String[] requestLineParts;
         if (requestLine == null || requestLine.isBlank() || (requestLineParts = requestLine.split(SP)).length > 3) {
             LOG.error("RequestLine is malformed, it could be either null, empty or not as per RFC spec");
-            throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
+            throw new HttpJParsingException(HttpStatusCode.BAD_REQUEST);
         }
 
         httpRequest.method(requestLineParts[0])

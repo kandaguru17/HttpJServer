@@ -1,7 +1,7 @@
 package com.httpjserver.core.worker;
 
 import com.httpjserver.core.parser.HttpJParser;
-import com.httpjserver.http.HttpParsingException;
+import com.httpjserver.core.parser.HttpJParsingException;
 import com.httpjserver.http.HttpRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class HttpJServerWorker implements Runnable {
 
             outputStream.write(response.getBytes());
             outputStream.flush();
-        } catch (HttpParsingException ex) {
+        } catch (HttpJParsingException ex) {
             LOG.error("Error Occurred in serving the request {}", ex.getMessage(), ex);
             handleException(ex, outputStream);
         } catch (IOException e) {
@@ -70,7 +70,7 @@ public class HttpJServerWorker implements Runnable {
         }
     }
 
-    private void handleException(HttpParsingException ex, OutputStream os) {
+    private void handleException(HttpJParsingException ex, OutputStream os) {
         String response;
         String httpVersion = "HTTP/1.1";
         response = httpVersion + " " + ex.getErrorCode() + " " + ex.getMessage() + CRLF + "Content-Length: 0" + CRLF + CRLF;

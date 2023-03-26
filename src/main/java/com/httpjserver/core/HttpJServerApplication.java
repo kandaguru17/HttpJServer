@@ -2,7 +2,7 @@ package com.httpjserver.core;
 
 import com.httpjserver.config.HttpJConfiguration;
 import com.httpjserver.config.HttpJConfigurationManager;
-import com.httpjserver.core.socket.HttpJServer;
+import com.httpjserver.core.server.HttpJServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,14 +11,21 @@ import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Application (Server) starter class that runs on a dedicated thread without blocking the main thread.
+ */
 public class HttpJServerApplication {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpJServerApplication.class);
 
+    private HttpJServerApplication() {
+
+    }
+
     private static void startHttpJServer(HttpJConfigurationManager httpJConfigurationManager) throws IOException {
         ExecutorService executorService = Executors.newFixedThreadPool(1, r -> new Thread(r, "httpjserver-thread"));
         HttpJConfiguration configuration = httpJConfigurationManager.getConfiguration();
-        ServerSocket serverSocket = new ServerSocket(configuration.port(),10);
+        ServerSocket serverSocket = new ServerSocket(configuration.port(), 10);
         initializeShutDownHook(serverSocket);
         executorService.execute(new HttpJServer(serverSocket, configuration));
         executorService.shutdown();
@@ -42,6 +49,9 @@ public class HttpJServerApplication {
         return httpJConfigurationManager;
     }
 
+    /**
+     * start method to start the httpJServer.
+     */
     public static void start() {
         HttpJConfigurationManager httpJConfigurationManager = loadApplicationConfig();
         try {

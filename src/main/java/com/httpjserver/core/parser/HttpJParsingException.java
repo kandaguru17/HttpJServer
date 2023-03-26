@@ -1,10 +1,12 @@
-package com.httpjserver.http;
+package com.httpjserver.core.parser;
 
-public class HttpParsingException extends Exception {
+import com.httpjserver.http.HttpStatusCode;
+
+public class HttpJParsingException extends Exception {
 
     private final HttpStatusCode statusCode;
 
-    public HttpParsingException(HttpStatusCode statusCode) {
+    public HttpJParsingException(HttpStatusCode statusCode) {
         super(statusCode.getMessage());
         this.statusCode = statusCode;
     }

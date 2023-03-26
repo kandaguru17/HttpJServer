@@ -1,10 +1,18 @@
 package com.httpjserver.http;
 
+import com.httpjserver.core.parser.HttpJParsingException;
+
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * DeSerialized Http request object to pass to downstream layers.
+ */
 public class HttpRequest {
 
+    /**
+     * Http method of the incoming request.
+     */
     public enum HttpMethod {
         GET, POST, HEAD, OPTIONS, PUT, PATCH, DELETE;
         public static final int MAX_LENGTH;
@@ -49,31 +57,31 @@ public class HttpRequest {
         return requestBody;
     }
 
-    public HttpRequest method(String method) throws HttpParsingException {
+    public HttpRequest method(String method) throws HttpJParsingException {
         try {
             if (method.length() > HttpMethod.MAX_LENGTH) {
-                throw new HttpParsingException(HttpStatusCode.NOT_IMPLEMENTED);
+                throw new HttpJParsingException(HttpStatusCode.NOT_IMPLEMENTED);
             }
             this.method = HttpMethod.valueOf(method);
             return this;
         } catch (Exception e) {
-            throw new HttpParsingException(HttpStatusCode.NOT_IMPLEMENTED);
+            throw new HttpJParsingException(HttpStatusCode.NOT_IMPLEMENTED);
         }
     }
 
-    public HttpRequest resourcePath(String resourcePath) throws HttpParsingException {
+    public HttpRequest resourcePath(String resourcePath) throws HttpJParsingException {
         if (resourcePath == null || resourcePath.isBlank()) {
-            throw new HttpParsingException(HttpStatusCode.BAD_REQUEST);
+            throw new HttpJParsingException(HttpStatusCode.BAD_REQUEST);
         }
         this.resourcePath = resourcePath;
         return this;
     }
 
-    public HttpRequest version(String version) throws HttpParsingException {
+    public HttpRequest version(String version) throws HttpJParsingException {
         this.version = version;
         this.compatibleVersion = HttpVersion.getCompatibleHttpVersion(version);
         if (compatibleVersion == null) {
-            throw new HttpParsingException(HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED);
+            throw new HttpJParsingException(HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED);
         }
         return this;
     }

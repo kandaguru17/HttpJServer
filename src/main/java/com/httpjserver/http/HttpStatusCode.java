@@ -1,5 +1,8 @@
 package com.httpjserver.http;
 
+/**
+ * Response Status codes of the HttpResponse
+ */
 public enum HttpStatusCode {
 
     BAD_REQUEST(400, "Bad Request"),
