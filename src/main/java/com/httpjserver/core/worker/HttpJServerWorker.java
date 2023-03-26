@@ -38,11 +38,11 @@ public class HttpJServerWorker implements Runnable {
             // TODO: hard coded response, use the response from the FrameWork
             String responseBody = "";
             if (httpRequest.getMethod() != null)
-                responseBody = httpRequest.getRequestBody() != null ? "<p>" + httpRequest.getRequestBody() + "</p>" : "<h1> Helloo !!</h1>";
+                responseBody = httpRequest.getRequestBody() != null ? httpRequest.getRequestBody() : "<h1> Helloo !!</h1>";
 
 
             var response = "HTTP/1.1 200 OK" + CRLF +
-                    "Content-Type: text/html" + CRLF +
+                    "Content-Type: " + httpRequest.getHeaders().get("Content-Type") + CRLF +
                     "Content-Length: " + responseBody.getBytes().length + CRLF + CRLF
                     + responseBody + CRLF + CRLF;
 

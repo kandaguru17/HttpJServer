@@ -35,12 +35,11 @@ public class HttpJParserTest {
         assertEquals("/", httpRequest.getResourcePath());
         assertEquals("HTTP/1.1", httpRequest.getVersion());
         assertEquals(HttpVersion.HTTP_1_1, httpRequest.getCompatibleVersion());
-        assertEquals("localhost", httpRequest.getHost());
-        assertEquals(13, httpRequest.getHeaders().size());
+        assertEquals(14, httpRequest.getHeaders().size());
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"OPTIONS", "LONG_METHOD_NAME"})
+    @ValueSource(strings = {"OPTION", "LONG_METHOD_NAME"})
     void parseHttpJParser_notImplemented(String method) {
         is = new ByteArrayInputStream(generateTestCase(method, "HTTP/1.1"));
         final var ex = assertThrows(HttpParsingException.class, () -> httpJParser.parseRequest(is));
@@ -51,7 +50,7 @@ public class HttpJParserTest {
 
     @Test
     void parseHttpJParser_badRequest() {
-        is = new ByteArrayInputStream(generateInvalidRequestLineItems("GET"));
+        is = new ByteArrayInputStream(generateInvalidRequestLineItems());
         final var ex = assertThrows(HttpParsingException.class, () -> httpJParser.parseRequest(is));
         assertEquals(400, ex.getErrorCode());
         assertEquals(BAD_REQUEST.getMessage(), ex.getMessage());
@@ -86,18 +85,20 @@ public class HttpJParserTest {
     @Test
     void parseHttpJParser_withRequestBody() throws HttpParsingException {
         var httpRequestBody = "{\"Hello\" : \"World\"}";
-        is = new ByteArrayInputStream(generateTestCaseWithBody("POST", "HTTP/1.1", httpRequestBody));
+        is = new ByteArrayInputStream(generateTestCaseWithBody(httpRequestBody));
         HttpRequest httpRequest = httpJParser.parseRequest(is);
         assertEquals(HttpRequest.HttpMethod.POST, httpRequest.getMethod());
         assertEquals("/", httpRequest.getResourcePath());
         assertEquals(HttpVersion.HTTP_1_1, httpRequest.getCompatibleVersion());
-        assertEquals("localhost", httpRequest.getHost());
-        assertEquals(13, httpRequest.getHeaders().size());
+        assertEquals(15, httpRequest.getHeaders().size());
         assertEquals(httpRequestBody, httpRequest.getRequestBody());
     }
 
-    private byte[] generateTestCaseWithBody(String method, String httpVersion, String body) {
-        return (new String(generateTestCase(method, httpVersion)) + CRLF
+    private byte[] generateTestCaseWithBody(String body) {
+        return (new String(generateTestCase("POST", "HTTP/1.1"))
+                + CRLF
+                + "Content-Length: " + body.length()
+                + CRLF
                 + CRLF
                 + body).getBytes();
     }
@@ -122,8 +123,8 @@ public class HttpJParserTest {
         return str.getBytes();
     }
 
-    private byte[] generateInvalidRequestLineItems(String method) {
-        final var str = method + " INVALID_ITEM / HTTP/1.1" + CRLF +
+    private byte[] generateInvalidRequestLineItems() {
+        final var str = "GET" + " INVALID_ITEM / HTTP/1.1" + CRLF +
                 "Host: localhost:8080" + CRLF +
                 "Connection: keep-alive" + CRLF +
                 "sec-ch-ua: \"Google Chrome\";v=\"111\", \"Not(A:Brand\";v=\"8\", \"Chromium\";v=\"111\"" + CRLF +

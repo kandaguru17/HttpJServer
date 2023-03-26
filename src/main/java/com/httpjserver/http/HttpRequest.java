@@ -5,9 +5,8 @@ import java.util.Map;
 
 public class HttpRequest {
 
-
     public enum HttpMethod {
-        GET, POST, HEAD, OPTIONS;
+        GET, POST, HEAD, OPTIONS, PUT, PATCH;
         public static final int MAX_LENGTH;
 
         static {
@@ -25,8 +24,6 @@ public class HttpRequest {
     private HttpVersion compatibleVersion;
     private Map<String, String> headers;
     private String requestBody;
-    private String host;
-
 
     public HttpMethod getMethod() {
         return method;
@@ -48,16 +45,15 @@ public class HttpRequest {
         return headers;
     }
 
-    public String getHost() {
-        return host;
-    }
-
     public String getRequestBody() {
         return requestBody;
     }
 
     public HttpRequest method(String method) throws HttpParsingException {
         try {
+            if (method.length() > HttpMethod.MAX_LENGTH) {
+                throw new HttpParsingException(HttpStatusCode.NOT_IMPLEMENTED);
+            }
             this.method = HttpMethod.valueOf(method);
             return this;
         } catch (Exception e) {
@@ -92,11 +88,6 @@ public class HttpRequest {
 
     public HttpRequest requestBody(String requestBody) {
         this.requestBody = requestBody;
-        return this;
-    }
-
-    public HttpRequest host(String host) {
-        this.host = host;
         return this;
     }
 
