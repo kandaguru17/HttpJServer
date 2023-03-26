@@ -6,7 +6,7 @@ import java.util.Map;
 public class HttpRequest {
 
     public enum HttpMethod {
-        GET, POST, HEAD, OPTIONS, PUT, PATCH;
+        GET, POST, HEAD, OPTIONS, PUT, PATCH, DELETE;
         public static final int MAX_LENGTH;
 
         static {
