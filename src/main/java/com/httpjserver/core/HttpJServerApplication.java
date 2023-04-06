@@ -19,7 +19,6 @@ public class HttpJServerApplication {
     private static final Logger LOG = LoggerFactory.getLogger(HttpJServerApplication.class);
 
     private HttpJServerApplication() {
-
     }
 
     private static void startHttpJServer(HttpJConfigurationManager httpJConfigurationManager) throws IOException {

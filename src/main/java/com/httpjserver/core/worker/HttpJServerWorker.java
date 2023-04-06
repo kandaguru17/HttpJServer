@@ -36,17 +36,18 @@ public class HttpJServerWorker implements Runnable {
             HttpRequest httpRequest = httpJParser.parseRequest(inputStream);
 
             // TODO: hard coded response, use the response from the FrameWork
-            String responseBody = "";
-            if (httpRequest.getMethod() != null)
+
+
+
+            String responseBody;
+            if (httpRequest.getMethod() != null) {
                 responseBody = httpRequest.getRequestBody() != null ? httpRequest.getRequestBody() : "<h1> Helloo !!</h1>";
-
-
-            var response = "HTTP/1.1 200 OK" + CRLF +
-                    "Content-Type: " + httpRequest.getHeaders().get("Content-Type") + CRLF +
-                    "Content-Length: " + responseBody.getBytes().length + CRLF + CRLF
-                    + responseBody + CRLF + CRLF;
-
-            outputStream.write(response.getBytes());
+                var response = "HTTP/1.1 200 OK" + CRLF +
+                        "Content-Type: " + httpRequest.getHeaders().get("Content-Type") + CRLF +
+                        "Content-Length: " + responseBody.getBytes().length + CRLF + CRLF
+                        + responseBody + CRLF + CRLF;
+                outputStream.write(response.getBytes());
+            }
             outputStream.flush();
         } catch (HttpJParsingException ex) {
             LOG.error("Error Occurred in serving the request {}", ex.getMessage(), ex);

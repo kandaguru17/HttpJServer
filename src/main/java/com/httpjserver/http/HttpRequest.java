@@ -19,7 +19,7 @@ public class HttpRequest {
 
         static {
             int length = Integer.MIN_VALUE;
-            for (var method : HttpRequest.HttpMethod.values()) {
+            for (var method : HttpMethod.values()) {
                 length = Math.max(length, method.name().length());
             }
             MAX_LENGTH = length;

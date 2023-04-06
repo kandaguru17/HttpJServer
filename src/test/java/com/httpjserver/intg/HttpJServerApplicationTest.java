@@ -24,7 +24,6 @@ public class HttpJServerApplicationTest {
 
     ExecutorService service = Executors.newFixedThreadPool(5);
 
-
     @BeforeAll
     void setUp() {
         HttpJServerApplication.start();
@@ -37,7 +36,6 @@ public class HttpJServerApplicationTest {
      */
     @Test
     void concurrentHttpRequest_shouldServeAllTheRequests() throws InterruptedException, ExecutionException {
-
         // prepare
         CountDownLatch latch = new CountDownLatch(5);
         String reqBody = "{\"hello\": \"World\"}";

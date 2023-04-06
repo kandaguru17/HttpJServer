@@ -44,9 +44,16 @@ public class HttpJParser {
 
             // parse request line
             String request = bufferedReader.readLine();
-            parseRequestLine(request, httpRequest);
 
-            LOG.debug("Request Line parsed {} {} {}", httpRequest.getMethod(),
+            if (isPreFlightRequest(request)) {
+                LOG.warn("ignoring pre flight request");
+                return;
+            }
+
+            // parse the request line
+            parseRequestLine(request, httpRequest);
+            LOG.debug("Request Line parsed {} {} {}",
+                    httpRequest.getMethod(),
                     httpRequest.getResourcePath(),
                     httpRequest.getVersion());
 
@@ -64,11 +71,14 @@ public class HttpJParser {
             parseRequestBody(bufferedReader, httpRequest);
             LOG.debug("Request Body parsed {}", httpRequest.getRequestBody() == null ? "" : httpRequest.getRequestBody());
 
-
         } catch (IOException e) {
             LOG.error("Error occurred in parsing the request line", e);
             throw new HttpJParsingException(HttpStatusCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private static boolean isPreFlightRequest(String request) {
+        return request == null || request.isEmpty();
     }
 
     private void parseRequestLine(String requestLine, HttpRequest httpRequest) throws HttpJParsingException {
